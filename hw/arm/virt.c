@@ -205,6 +205,7 @@ static const int a15irqmap[] = {
     [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
     [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
     [VIRT_PLATFORM_BUS] = 112, /* ...to 112 + PLATFORM_BUS_NUM_IRQS -1 */
+    [VIRT_POPCOUNT] = 176, /* one interupt at the moment */
 };
 
 static const char *valid_cpus[] = {
@@ -1108,6 +1109,34 @@ static void create_virtio_devices(const VirtMachineState *vms)
         qemu_fdt_setprop(ms->fdt, nodename, "dma-coherent", NULL, 0);
         g_free(nodename);
     }
+}
+
+static void create_br_device(const VirtMachineState *vms){
+    hwaddr base = vms->memmap[VIRT_POPCOUNT].base;
+    hwaddr size = vms->memmap[VIRT_POPCOUNT].size;
+    int irq = vms->irqmap[VIRT_POPCOUNT];
+    DeviceState *dev = qdev_new(TYPE_BUTTER_ROBOT);
+    //SysBusDevice *s = SYS_BUS_DEVICE(dev);
+    char *nodename;
+
+    MachineState *ms = MACHINE(vms);
+
+
+    //sysbus_create_simple(TYPE_BUTTER_ROBOT, base, qdev_get_gpio_in(vms->gic, irq));
+
+    nodename = g_strdup_printf("/virt_br@%" PRIx64, base);
+
+    qemu_fdt_add_subnode(ms->fdt, nodename);
+    qemu_fdt_setprop_string(ms->fdt, nodename, "compatible", "virt_br");
+    qemu_fdt_setprop_sized_cells(ms->fdt, nodename, "reg", 2, base, 2, size);
+    qemu_fdt_setprop_cells(ms->fdt, nodename, "interrupt-parent", 
+                           vms->gic_phandle);
+    qemu_fdt_setprop_cells(ms->fdt, nodename, "interrupts", 
+                           GIC_FDT_IRQ_TYPE_SPI, irq,
+                           GIC_FDT_IRQ_FLAGS_LEVEL_HI);
+    
+    g_free(nodename);
+
 }
 
 #define VIRT_FLASH_SECTOR_SIZE (256 * KiB)
@@ -2331,7 +2360,8 @@ static void machvirt_init(MachineState *machine)
                                arm_virt_nvdimm_acpi_dsmio,
                                vms->fw_cfg, OBJECT(vms));
     }
-
+    
+    create_br_device(vms);
     br_create(sysmem, vms->memmap[VIRT_POPCOUNT].base);
 
     vms->bootinfo.ram_size = machine->ram_size;
