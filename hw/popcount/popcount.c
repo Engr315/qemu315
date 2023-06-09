@@ -57,7 +57,7 @@ static void pop_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int si
     s->bitcount += popcount(value);
 
     qemu_log_mask(LOG_GUEST_ERROR, "%s: write: addr=0x%x v=0x%x\n",
-                  // __func__, (int)addr, (int)value);
+                   __func__, (int)addr, (int)value);
 }
 
 
