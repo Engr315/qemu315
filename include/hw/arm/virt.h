@@ -78,6 +78,7 @@ enum {
     VIRT_PCIE_PIO,
     VIRT_PCIE_ECAM,
     VIRT_POPCOUNT,
+    VIRT_DMA,
     VIRT_PLATFORM_BUS,
     VIRT_GPIO,
     VIRT_SECURE_UART,
@@ -184,6 +185,7 @@ struct VirtMachineState {
     PCIBus *bus;
     char *oem_id;
     char *oem_table_id;
+    XilinxAXIDMA dma;
 };
 
 #define VIRT_ECAM_ID(high) (high ? VIRT_HIGH_PCIE_ECAM : VIRT_PCIE_ECAM)

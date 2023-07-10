@@ -81,6 +81,7 @@
 #include "hw/virtio/virtio-iommu.h"
 #include "hw/char/pl011.h"
 #include "qemu/guest-random.h"
+#include "hw/dma/xilinx_axi-dma.h"
 
 #define DEFINE_VIRT_MACHINE_LATEST(major, minor, latest) \
     static void virt_##major##_##minor##_class_init(ObjectClass *oc, \
@@ -165,9 +166,10 @@ static const MemMapEntry base_memmap[] = {
     [VIRT_PCIE_ECAM] =          { 0x3f000000, 0x01000000 },
     /* Popcount Hardware Locationi */
     [VIRT_POPCOUNT] =           { 0x40000000, 0x0f000000}, //custom
+    [VIRT_DMA]      =           { 0x50000000, 0x0fffffff}
     /* Actual RAM size depends on initial RAM and device memory settings */
     //[VIRT_MEM] =                { GiB, LEGACY_RAMLIMIT_BYTES },
-    [VIRT_MEM] =                { 0x50000000, LEGACY_RAMLIMIT_BYTES },
+    [VIRT_MEM] =                { 0x60000000, LEGACY_RAMLIMIT_BYTES },
 };
 
 /*
@@ -899,6 +901,10 @@ static void create_uart(const VirtMachineState *vms, int uart,
     }
 
     g_free(nodename);
+}
+
+static void create_dma(const VirtMachineState *vms){
+    return 0;
 }
 
 static void create_rtc(const VirtMachineState *vms)

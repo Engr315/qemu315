@@ -37,20 +37,16 @@
 #include "hw/stream.h"
 #include "qom/object.h"
 
+#include "hw/dma/xilinx_axi-dma.h"
+
 #define D(x)
 
-#define TYPE_XILINX_AXI_DMA "xlnx.axi-dma"
-#define TYPE_XILINX_AXI_DMA_DATA_STREAM "xilinx-axi-dma-data-stream"
-#define TYPE_XILINX_AXI_DMA_CONTROL_STREAM "xilinx-axi-dma-control-stream"
+//#define TYPE_XILINX_AXI_DMA "xlnx.axi-dma"
+//#define TYPE_XILINX_AXI_DMA_DATA_STREAM "xilinx-axi-dma-data-stream"
+//#define TYPE_XILINX_AXI_DMA_CONTROL_STREAM "xilinx-axi-dma-control-stream"
 
-OBJECT_DECLARE_SIMPLE_TYPE(XilinxAXIDMA, XILINX_AXI_DMA)
+//OBJECT_DECLARE_SIMPLE_TYPE(XilinxAXIDMA, XILINX_AXI_DMA)
 
-typedef struct XilinxAXIDMAStreamSink XilinxAXIDMAStreamSink;
-DECLARE_INSTANCE_CHECKER(XilinxAXIDMAStreamSink, XILINX_AXI_DMA_DATA_STREAM,
-                         TYPE_XILINX_AXI_DMA_DATA_STREAM)
-
-DECLARE_INSTANCE_CHECKER(XilinxAXIDMAStreamSink, XILINX_AXI_DMA_CONTROL_STREAM,
-                         TYPE_XILINX_AXI_DMA_CONTROL_STREAM)
 
 #define R_DMACR             (0x00 / 4)
 #define R_DMASR             (0x04 / 4)
@@ -115,29 +111,24 @@ struct Stream {
     unsigned char txbuf[16 * 1024];
 };
 
-struct XilinxAXIDMAStreamSink {
-    Object parent;
 
-    struct XilinxAXIDMA *dma;
-};
-
-struct XilinxAXIDMA {
-    SysBusDevice busdev;
-    MemoryRegion iomem;
-    MemoryRegion *dma_mr;
-    AddressSpace as;
-
-    uint32_t freqhz;
-    StreamSink *tx_data_dev;
-    StreamSink *tx_control_dev;
-    XilinxAXIDMAStreamSink rx_data_dev;
-    XilinxAXIDMAStreamSink rx_control_dev;
-
-    struct Stream streams[2];
-
-    StreamCanPushNotifyFn notify;
-    void *notify_opaque;
-};
+//struct XilinxAXIDMA {
+//    SysBusDevice busdev;
+//    MemoryRegion iomem;
+//    MemoryRegion *dma_mr;
+//    AddressSpace as;
+//
+//    uint32_t freqhz;
+//    StreamSink *tx_data_dev;
+//    StreamSink *tx_control_dev;
+//    XilinxAXIDMAStreamSink rx_data_dev;
+//    XilinxAXIDMAStreamSink rx_control_dev;
+//
+//    struct Stream streams[2];
+//
+//    StreamCanPushNotifyFn notify;
+//    void *notify_opaque;
+//};
 
 /*
  * Helper calls to extract info from descriptors and other trivial
