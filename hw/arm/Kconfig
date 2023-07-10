@@ -33,6 +33,7 @@ config ARM_VIRT
     select ACPI_CXL
     select ACPI_HMAT
     select POPCOUNT
+    select XILINX_AXI # Add xilinx AXI
 
 config CHEETAH
     bool

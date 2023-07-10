@@ -21,6 +21,9 @@ config ZYNQ_DEVCFG
 config XLNX_ZDMA
     bool
 
+config XILINX_AXI_DMA
+  bool
+
 config STP2000
     bool
 
