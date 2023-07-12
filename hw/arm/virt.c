@@ -165,8 +165,8 @@ static const MemMapEntry base_memmap[] = {
     [VIRT_PCIE_PIO] =           { 0x3eff0000, 0x00010000 },
     [VIRT_PCIE_ECAM] =          { 0x3f000000, 0x01000000 },
     /* Popcount Hardware Locationi */
-    [VIRT_POPCOUNT] =           { 0x40000000, 0x0f000000}, //custom
-    [VIRT_DMA]      =           { 0x50000000, 0x0fffffff}
+    [VIRT_POPCOUNT] =           { 0x40000000, 0x00100000}, //custom
+    [VIRT_DMA]      =           { 0x40400000, 0x00010000}, // should be: 0x40400000 
     /* Actual RAM size depends on initial RAM and device memory settings */
     //[VIRT_MEM] =                { GiB, LEGACY_RAMLIMIT_BYTES },
     [VIRT_MEM] =                { 0x60000000, LEGACY_RAMLIMIT_BYTES },
@@ -203,6 +203,7 @@ static const int a15irqmap[] = {
     [VIRT_GPIO] = 7,
     [VIRT_SECURE_UART] = 8,
     [VIRT_ACPI_GED] = 9,
+    [VIRT_DMA] = 10;
     [VIRT_MMIO] = 16, /* ...to 16 + NUM_VIRTIO_TRANSPORTS - 1 */
     [VIRT_GIC_V2M] = 48, /* ...to 48 + NUM_GICV2M_SPIS - 1 */
     [VIRT_SMMU] = 74,    /* ...to 74 + NUM_SMMU_IRQS - 1 */
@@ -904,6 +905,26 @@ static void create_uart(const VirtMachineState *vms, int uart,
 }
 
 static void create_dma(const VirtMachineState *vms){
+
+    char *nodename;
+    hwaddr base = vms->memmap[VIRT_DMA].base;
+    hwaddr size = vms->memmap[VIRT_DMA].size;
+    const char compat[] = "xlnx,axi-dma-1.\00.a";       // COMPAT: xlnx,axi-dma-1.00.a
+    DeviceState *dev = qdev_new(TYPE_XILINX_AXI_DMA);   // DONE: Get the real DMA type
+    SysBusDevice *s = SYS_BUS_DEVICE(dev);
+    MachineState *ms = MACHINE(vms);
+
+    sysbus_realize_and_unref(s, &error_fatal);
+    sysbus_mmio_map(s, 0, base);
+
+    sysbus_connect_irq(s, 0); //TODO FIGURE OUT THIS IRQ INTERRUPT THING;
+
+    nodename = g_strdup_printf("/axidma@%" PRIx64, base);
+    qemu_fdt_add_subnode(ms->fdt, nodename);
+    qemu_fdt_setprop(ms->fdt, nodename, "compatible", compat, sizeof(compat));
+    qemu_fdt_setprop_sized_cells(ms->fdt, nodename, "reg", 2, base, 2, size);
+
+    g_free(nodename);
     return 0;
 }
 
@@ -2300,6 +2321,7 @@ static void machvirt_init(MachineState *machine)
     create_rtc(vms);
 
     create_pcie(vms);
+    create_dma(vms, sysmem);
 
     if (has_ged && aarch64 && firmware_loaded && virt_is_acpi_enabled(vms)) {
         vms->acpi_dev = create_acpi_ged(vms);
