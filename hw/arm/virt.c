@@ -928,9 +928,6 @@ static void create_dma(const VirtMachineState *vms){
     g_free(nodename);
 }
 
-static void create_fake_dma(const VirtMachineState *vms){
-}
-
 static void create_rtc(const VirtMachineState *vms)
 {
     char *nodename;
