@@ -42,6 +42,7 @@
 #include "hw/vfio/vfio-amd-xgbe.h"
 #include "hw/display/ramfb.h"
 #include "hw/popcount/popcount.h"       //Custom File
+#include "hw/dma/popcount_dma.h"
 #include "net/net.h"
 #include "sysemu/device_tree.h"
 #include "sysemu/numa.h"
@@ -2360,6 +2361,7 @@ static void machvirt_init(MachineState *machine)
                                vms->fw_cfg, OBJECT(vms));
     }
 
+    pdma_create(sysmem, vms->memmap[VIRT_DMA].base);
     popcount_create(sysmem, vms->memmap[VIRT_POPCOUNT].base);
 
     vms->bootinfo.ram_size = machine->ram_size;
