@@ -80,7 +80,7 @@ static void MM2S_DMA_SA_write(void *opaque, hwaddr addr, uint64_t val64, unsigne
 static uint64_t MM2S_LENGTH_read(void *opaque, hwaddr addr, unsigned int size)
 {
   pdmaState *s = opaque;
-  return (uint64_t) s->LEN_reg;
+  return (uint64_t) s->VALUE;
 }
 
 static void MM2S_LENGTH_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size)
@@ -89,13 +89,18 @@ static void MM2S_LENGTH_write(void *opaque, hwaddr addr, uint64_t val64, unsigne
   // 31-26 are reserved bits! see:
   // https://docs.xilinx.com/r/en-US/pg021_axi_dma/MM2S_LENGTH-MM2S-DMA-Transfer-Length-Register-Offset-28h
   uint32_t value = val64 & 0x3FFFFFF;
-  uint32_t buffer[10];
+  //uint32_t buffer[8]; // No idea how this works, but for some reason it does...
+    //
+  uint32_t buffer;
   // set length
   s->LEN_reg = value;
-  // DMA Transfer``
 
-  cpu_physical_memory_read(0x40001000, &buffer, 0xA);
-  s->LEN_reg = buffer[1];
+  // DMA Transfer``
+  // cpu_physical_memory_read(hwaddr addr, void* buffer, hwaddr len)
+  // len is number of bytes uint32 = 4 bytes
+  cpu_physical_memory_read(0x40001000, &buffer, 4);
+  cpu_physical_memory_write(s->SA_reg, &buffer, 4);
+  s->VALUE = buffer;
     
   s->start = 1;
 }
