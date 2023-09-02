@@ -25,7 +25,7 @@ struct pdmaState
     MemoryRegion MM2S_SA;
     MemoryRegion MM2S_LENGTH;
 
-    uint32_t CR_reg;
+    uint64_t CR_reg;
     uint32_t SA_reg; // This is uncecessary, its unaccessable in userspace
     uint32_t LEN_reg;
     uint32_t VALUE;

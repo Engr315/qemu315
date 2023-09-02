@@ -166,7 +166,7 @@ static const MemMapEntry base_memmap[] = {
     [VIRT_PCIE_PIO] =           { 0x3eff0000, 0x00010000 },
     [VIRT_PCIE_ECAM] =          { 0x3f000000, 0x01000000 },
     /* Popcount Hardware Locationi */
-    [VIRT_POPCOUNT] =           { 0x40000000, 0x00000100}, //custom
+    [VIRT_POPCOUNT] =           { 0x40000000, 0x0001000}, //custom
     [VIRT_DMA]      =           { 0x40001000, 0x00010000}, // should be: 0x40400000 
     /* Actual RAM size depends on initial RAM and device memory settings */
     //[VIRT_MEM] =                { GiB, LEGACY_RAMLIMIT_BYTES },

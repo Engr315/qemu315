@@ -34,14 +34,15 @@
 static uint64_t MM2S_DMACR_read(void *opaque, hwaddr addr, unsigned int size)
 {
     /* Aquiring state */
-    pdmaState *s = opaque;
+    //pdmaState *s = opaque;
      
     /* Log guest error for debugging */
     qemu_log_mask(LOG_GUEST_ERROR, "%s: read: addr=0x%x size=%d\n",
                   __func__, (int)addr,size);
 
     /* Return the current bitcount */
-    return s->CR_reg;
+    //return s->CR_reg;
+    return 0x0;
 }
 
 /* Write callback for main popcount function */
@@ -49,7 +50,7 @@ static void MM2S_DMACR_write(void *opaque, hwaddr addr, uint64_t val64, unsigned
 {
     pdmaState *s = opaque;
     uint32_t value = val64; /*this line is for full correctness - uint32_t*/
-    (void)s;
+    //(void)s;
     s->CR_reg=value;
     qemu_log_mask(LOG_GUEST_ERROR, "Wrote: %x to %x", value, (int)addr);
 }
@@ -91,17 +92,22 @@ static void MM2S_LENGTH_write(void *opaque, hwaddr addr, uint64_t val64, unsigne
   uint32_t value = val64 & 0x3FFFFFF;
   //uint32_t buffer[8]; // No idea how this works, but for some reason it does...
     //
-  uint32_t buffer;
   // set length
   s->LEN_reg = value;
-
+  uint32_t buffer[value/4];
   // DMA Transfer``
   // cpu_physical_memory_read(hwaddr addr, void* buffer, hwaddr len)
   // len is number of bytes uint32 = 4 bytes
-  cpu_physical_memory_read(0x40001000, &buffer, 4);
-  cpu_physical_memory_write(s->SA_reg, &buffer, 4);
-  s->VALUE = buffer;
-    
+  cpu_physical_memory_read(s->SA_reg, &buffer, value);
+  uint32_t *a = buffer;
+  for (int i = 0; i < (int)value/4; i++){
+      cpu_physical_memory_write(0x40000004, a, 4);
+      a++;
+  }
+  //cpu_physical_memory_read(0x40001000, &buffer, 4);
+  //cpu_physical_memory_write(s->SA_reg, &buffer, 4);
+  //s->VALUE = buffer;
+  s->LEN_reg = buffer[0]; 
   s->start = 1;
 }
 
