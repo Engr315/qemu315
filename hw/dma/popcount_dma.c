@@ -57,11 +57,16 @@ static void MM2S_DMACR_write(void *opaque, hwaddr addr, uint64_t val64, unsigned
 
 static uint64_t MM2S_DMASR_read(void *opaque, hwaddr addr, unsigned int size)
 {
-  return (uint64_t)65;
+  //pdmaState *s = opaque;
+  //return (uint64_t) s->SR_reg;
+  return 0x2;
 }
 static void MM2S_DMASR_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size)
 {
-  return;
+  pdmaState *s = opaque;
+  uint32_t value = val64;
+  //s->SR_reg = value;
+  s->VALUE = value;
 }
 
 static uint64_t MM2S_DMA_SA_read(void *opaque, hwaddr addr, unsigned int size)
