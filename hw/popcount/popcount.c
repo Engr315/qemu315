@@ -66,43 +66,42 @@ static void pop_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int si
     qemu_log_mask(LOG_GUEST_ERROR, "Wrote: %x to %x", value, (int)addr);
 }
 
-static uint64_t dma_read(void *opaque, hwaddr addr, unsigned int size){
-  popState *s = opaque;
-  uint32_t reduced_addr = addr - s->base;
+static uint64_t dma_cr_read(void *opaque, hwaddr addr, unsigned int size){
+  //popState *s = opaque;
+  //return s->CR_reg;
+  return 0x0;
+}
+static uint64_t dma_sr_read(void *opaque, hwaddr addr, unsigned int size){
+  //popState *s = opaque;
+  //return s->SR_reg;
+  return 0x2;
 
-  switch (reduced_addr) {
-    case REG_MM2S_DMACR:
-      return s->CR_reg;
-    case REG_MM2S_DMASR:
-      return s->SR_reg;
-    case REG_MM2S_SA:
-      return s->SA_reg;
-    case REG_MM2S_LENGTH:
-      return s->LEN_reg;
-    default:
-      return 0x51515151;
-  }
+}
+static uint64_t dma_sa_read(void *opaque, hwaddr addr, unsigned int size){
+  popState *s = opaque;
+  return s->SA_reg;
+
+}
+static uint64_t dma_len_read(void *opaque, hwaddr addr, unsigned int size){
+  popState *s = opaque;
+  return s->LEN_reg;
 }
 
-static void dma_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size){
+static void dma_cr_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size){
   popState *s = opaque;
   uint32_t value = val64;
-  uint32_t reduced_addr = addr - s->base;
-  switch (reduced_addr) {
-    case REG_MM2S_DMACR:
-      s->CR_reg=value;
-      break;
-    case REG_MM2S_DMASR:
-      s->SR_reg=value;
-      break;
-    case REG_MM2S_SA:
-      s->SA_reg = value;
-      break;
-    default:
-      break;
-  }
+  s->CR_reg=value;
 }
-
+static void dma_sr_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size){
+  popState *s = opaque;
+  uint32_t value = val64;
+  s->SR_reg=value;
+}
+static void dma_sa_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size){
+  popState *s = opaque;
+  uint32_t value = val64;
+  s->SA_reg = value;
+}
 static void MM2S_LENGTH_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size)
 {
   popState *s = opaque;
@@ -174,17 +173,32 @@ static const MemoryRegionOps r_ops = {
         .max_access_size = 4}
 };
 
-static const MemoryRegionOps dma_ops = {
-  .read = dma_read,
-  .write = dma_write,
+static const MemoryRegionOps dma_cr_ops = {
+  .read = dma_cr_read,
+  .write = dma_cr_write,
   .endianness = DEVICE_NATIVE_ENDIAN,
   .valid = {
     .min_access_size = 1,
     .max_access_size = 64}
 };
-
+static const MemoryRegionOps dma_sr_ops = {
+  .read = dma_sr_read,
+  .write = dma_sr_write,
+  .endianness = DEVICE_NATIVE_ENDIAN,
+  .valid = {
+    .min_access_size = 1,
+    .max_access_size = 64}
+};
+static const MemoryRegionOps dma_sa_ops = {
+  .read = dma_sa_read,
+  .write = dma_sa_write,
+  .endianness = DEVICE_NATIVE_ENDIAN,
+  .valid = {
+    .min_access_size = 1,
+    .max_access_size = 64}
+};
 static const MemoryRegionOps dma_len_ops = {
-  .read = dma_read,
+  .read = dma_len_read,
   .write = MM2S_LENGTH_write,
   .endianness = DEVICE_NATIVE_ENDIAN,
   .valid = {
@@ -202,9 +216,9 @@ popState *popcount_create(MemoryRegion *address_space, hwaddr base)
     write_reg_init(s);
     memory_region_init_io(&s->reset, NULL, &r_ops, s, TYPE_POPCOUNT, 4);
     memory_region_init_io(&s->mmio, NULL, &pop_ops, s, TYPE_POPCOUNT, 32);
-    memory_region_init_io(&s->MM2S_DMACR, NULL, &dma_ops, s, TYPE_POPCOUNT, 32);
-    memory_region_init_io(&s->MM2S_DMASR, NULL, &dma_ops, s, TYPE_POPCOUNT, 32);
-    memory_region_init_io(&s->MM2S_SA, NULL, &dma_ops, s, TYPE_POPCOUNT, 32);
+    memory_region_init_io(&s->MM2S_DMACR, NULL, &dma_cr_ops, s, TYPE_POPCOUNT, 32);
+    memory_region_init_io(&s->MM2S_DMASR, NULL, &dma_sr_ops, s, TYPE_POPCOUNT, 32);
+    memory_region_init_io(&s->MM2S_SA, NULL, &dma_sa_ops, s, TYPE_POPCOUNT, 32);
     memory_region_init_io(&s->MM2S_LENGTH, NULL, &dma_len_ops, s, TYPE_POPCOUNT, 32);
     memory_region_add_subregion(address_space, base, &s->reset);
     memory_region_add_subregion(address_space, base+4, &s->mmio);
