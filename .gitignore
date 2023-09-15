@@ -24,3 +24,5 @@ GTAGS
 /subprojects/slirp
 dma_test/
 
+bild.sh
+run.sh

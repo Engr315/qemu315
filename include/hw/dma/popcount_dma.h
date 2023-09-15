@@ -25,9 +25,13 @@ struct pdmaState
     MemoryRegion MM2S_SA;
     MemoryRegion MM2S_LENGTH;
 
-    uint32_t write_reg; // This is uncecessary, its unaccessable in userspace
-    uint32_t bitcount;
+    uint64_t CR_reg;
+    uint32_t SA_reg; // This is uncecessary, its unaccessable in userspace
+    uint32_t LEN_reg;
+    uint32_t VALUE;
+    uint8_t start;
 };
 
+pdmaState *pdma_create(MemoryRegion *address_space, hwaddr base);
 
 #endif //HW_PDMA_H
