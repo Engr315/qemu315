@@ -30,6 +30,8 @@
 #define REG_MM2S_SA       0x18 + DMA_OFFSET
 #define REG_MM2S_LENGTH   0x28 + DMA_OFFSET
 
+#define MMIO_DELAY        1000
+
 /* Read Callback for the popcount function */
 static uint64_t pop_read(void *opaque, hwaddr addr, unsigned int size)
 {
@@ -54,7 +56,7 @@ static uint32_t popcount(uint32_t val){
 }
 
 /* Write callback for main popcount function */
-static void pop_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size)
+static void pop_write_low(void *opaque, hwaddr addr, uint64_t val64, unsigned int size)
 {
     popState *s = opaque;
     uint32_t value = val64; /*this line is for full correctness - uint32_t*/
@@ -64,6 +66,14 @@ static void pop_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int si
     s->bitcount += popcount(value);
 
     qemu_log_mask(LOG_GUEST_ERROR, "Wrote: %x to %x", value, (int)addr);
+}
+
+static void pop_write(void *opaque, hwaddr addr, uint64_t val64, unsigned int size)
+{
+    for(int i = 0; i < MMIO_DELAY; i++){ 
+        qemu_log_mask(LOG_GUEST_ERROR, "READING RESET IS NOT USEFUL");
+    }
+    pop_write_low(opaque, addr, val64, size);
 }
 
 static uint64_t dma_cr_read(void *opaque, hwaddr addr, unsigned int size){
@@ -117,9 +127,11 @@ static void MM2S_LENGTH_write(void *opaque, hwaddr addr, uint64_t val64, unsigne
   // cpu_physical_memory_read(hwaddr addr, void* buffer, hwaddr len)
   // len is number of bytes uint32 = 4 bytes
   cpu_physical_memory_read(s->SA_reg, &buffer, value);
+
   uint32_t *a = buffer;
   for (int i = 0; i < (int)value/4; i++){
-      cpu_physical_memory_write(0x40000004, a, 4);
+      //cpu_physical_memory_write(0x40000004, a, 4);
+      pop_write_low(opaque, addr, *a, 4);
       a++;
   }
   //cpu_physical_memory_read(0x40001000, &buffer, 4);
